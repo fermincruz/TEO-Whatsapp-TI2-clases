@@ -204,7 +204,22 @@ def genera_conteos_palabras_usuario_y_resto(log: List[Mensaje], usuario: str) ->
     Para dividir el texto en palabras, se usa split. Para cada palabra,
     se utiliza la instrucción palabra.strip(".,:();¿?¡!") para eliminar signos de puntuación.
     '''
-    pass
+    conteos_usuario = Counter()
+    conteos_resto = Counter()
+
+    for mensaje in log:
+        # Dividir las palabras
+        # palabras = mensaje.texto.split()
+        # palabras = [palabra.strip(".,:();¿?¡!") for palabra in palabras]
+
+        palabras = [palabra.strip(".,:();¿?¡!") for palabra in mensaje.texto.split()]
+        if mensaje.usuario == usuario:
+            conteos_usuario.update(palabras)
+        else:
+            conteos_resto.update(palabras)
+
+    return conteos_usuario, conteos_resto
+
 
 def genera_palabras_caracteristicas_usuario(log: List[Mensaje], usuario: str, umbral: int = 2) -> Dict[str, float]:
     '''
@@ -223,7 +238,22 @@ def genera_palabras_caracteristicas_usuario(log: List[Mensaje], usuario: str, um
     a su frecuencia de uso por el usuario indicado, considerando solo aquellas palabras 
     con una frecuencia igual o superior al umbral especificado.
     '''
-    pass
+    conteos_usuario, conteos_resto = genera_conteos_palabras_usuario_y_resto(log, usuario)
+    total_palabras_usuario = sum(conteos_usuario.values())
+    total_palabras_resto = sum(conteos_resto.values())
+    
+    res = {}
+    for palabra in conteos_usuario:
+        conteo_usuario_palabra = conteos_usuario[palabra]
+        conteo_resto_palabra = conteos_resto[palabra]
+        if conteo_resto_palabra == 0:
+            conteo_resto_palabra = 0.00000001
+        res[palabra] = math.sqrt(
+            (conteo_usuario_palabra*total_palabras_resto)/
+            (total_palabras_usuario*conteo_resto_palabra)
+            )
+
+    return res
 
 
 # Esta función se da implementada
